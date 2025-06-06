@@ -1,83 +1,48 @@
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from 'react';
 
-export default function SilentTemple() {
-  const [entries, setEntries] = useState([]);
-  const [input, setInput] = useState("");
-  const [fade, setFade] = useState(false);
+const initialData = [
+  { ticker: 'SBER', price: 264.1, change: 1.2, volume: 120, rsi: 72 },
+  { ticker: 'YNDX', price: 2360, change: -3.4, volume: 300, rsi: 28 },
+  { ticker: 'GAZP', price: 175, change: 0.0, volume: 90, rsi: 50 },
+  { ticker: 'TCSG', price: 3550, change: 0.9, volume: 250, rsi: 75 },
+];
 
-  useEffect(() => {
-    const audio = new Audio("/ambient.mp3");
-    audio.loop = true;
-    audio.volume = 0.3;
-    audio.play().catch(() => {});
-    return () => audio.pause();
-  }, []);
+function getSignal(rsi) {
+  if (rsi < 30) return '🟥 Перепродан';
+  if (rsi > 70) return '🟩 Перекуплен';
+  return '—';
+}
 
-  useEffect(() => {
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/service-worker.js");
-    }
-  }, []);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!input.trim()) return;
-    const newEntry = input;
-    setEntries((prev) => [...prev, newEntry]);
-    setInput("");
-    setFade(true);
-    setTimeout(() => {
-      setEntries([]);
-      setFade(false);
-    }, 3000);
-  };
+export default function App() {
+  const [data] = useState(initialData);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col items-center justify-center px-4 relative overflow-hidden">
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="animate-flicker w-96 h-96 bg-gradient-radial from-yellow-100/20 to-transparent rounded-full blur-3xl mx-auto mt-20" />
-      </div>
-
-      <div className="text-center mb-8 z-10">
-        <h1 className="text-2xl md:text-4xl font-light tracking-wider mb-2">
-          Молчаливый храм
-        </h1>
-        <p className="text-sm md:text-base opacity-50">
-          Оставь свою мысль — и она исчезнет навсегда
-        </p>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-md flex flex-col items-center z-10"
-      >
-        <input
-          type="text"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          placeholder="Напиши что-то..."
-          className="bg-transparent border-b border-white focus:outline-none text-center text-lg py-2 w-full placeholder-gray-500"
-        />
-      </form>
-
-      <AnimatePresence>
-        {fade && (
-          <motion.div
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 0 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 2 }}
-            className="mt-8 text-center z-10"
-          >
-            <p className="text-md opacity-50 italic">мысль растворилась...</p>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      <div className="absolute bottom-6 text-xs text-gray-600 z-10">
-        Тишина глубже, чем кажется
-      </div>
+    <div className="p-6 bg-black min-h-screen text-white font-mono">
+      <h1 className="text-xl mb-4">🇷🇺 Рынок акций (RU)</h1>
+      <table className="w-full text-left border-separate border-spacing-y-2">
+        <thead className="text-gray-400 text-sm">
+          <tr>
+            <th>Тикер</th>
+            <th>Цена</th>
+            <th>%</th>
+            <th>Объём</th>
+            <th>RSI</th>
+            <th>Сигнал</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((stock) => (
+            <tr key={stock.ticker} className="bg-zinc-800 hover:bg-zinc-700 transition rounded">
+              <td className="py-2 px-3 font-bold">{stock.ticker}</td>
+              <td className="px-3">{stock.price}</td>
+              <td className={`px-3 ${stock.change > 0 ? 'text-green-400' : stock.change < 0 ? 'text-red-400' : ''}`}>{stock.change}%</td>
+              <td className="px-3">{stock.volume}</td>
+              <td className="px-3">{stock.rsi}</td>
+              <td className="px-3">{getSignal(stock.rsi)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
