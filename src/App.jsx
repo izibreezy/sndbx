@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from 'react';
 
-const tickers = ["SBER", "GAZP", "YDEX", "T"];
+const tickers = ["SBER", "GAZP", "SBERP", "T"];
 
 function getSignal(rsi) {
   if (rsi < 30) return '🟥 Перепродан';
